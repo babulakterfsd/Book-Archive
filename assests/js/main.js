@@ -1,125 +1,80 @@
-//Globar Variables
-const userInput = document.getElementById('search-keyword');
-const searchButton = document.getElementById('search-btn');
-const resultContainer = document.getElementById('result-container');
-let searchKeyword = '';
-let apiURL = '';
+const searceField = document.getElementById('input-field')
+const displayBooks = document.getElementById('display-books')
+const spinner = document.getElementById('spinner')
+spinner.style.display = 'none'
+const foundResult = document.getElementById('found-result')
+const errorMessage1 = document.getElementById('error1')
+const errorMessage2 = document.getElementById('error2')
 
+// searce books
 
-//get search keyword from user input
-userInput.addEventListener('keyup', (event) => {
-    searchKeyword = event.target.value;
-})
+const searceBook = () => {
+    const searceText = searceField.value;
+    searceField.value = '';
 
-//get data from the server
-const getBookData = async (apiURL) => {
-    try {
-        const response = await fetch(apiURL);
-        const bookData = await response.json();
-        displayData(bookData?.docs);
-        const resultCount = document.getElementById('result-count');
-        resultCount.innerText = `Showing 100 of ${bookData?.num_found} results`
-        console.log(bookData);
-    } catch (error) {
-        console.log(`${error.message}`)
+    if(searceText === '') {
+        // error handle 1 
+        errorMessage1.style.display = 'block'
+        // clear display
+        displayBooks.innerText = '';
+        foundResult.style.display = 'none'
+        errorMessage2.style.display = 'none'
+
     }
+    else{
+        // add spinner
+        spinner.style.display = 'block'
+        // clear display
+        displayBooks.innerText = '';
+        foundResult.style.display = 'none'
+        errorMessage1.style.display = 'none'
+        errorMessage2.style.display = 'none'
+
+        // fetch data
+        fetch(`HTTPS://openlibrary.org/search.json?q=${searceText}`)
+            .then(res => res.json())
+            .then(data => showBooks(data))
+    }
+
 }
 
-
-//search button handler
-searchButton.addEventListener('click', () => {
-    if(searchKeyword.length === 0) {
-        alert(`please type your preferred book name`)
-    } else {
-        apiURL = `https://openlibrary.org/search.json?q=${searchKeyword}`
+const showBooks = (books) => {
+    console.log(books.docs.length)
+    // error handle 2
+    if(books.docs.length === 0){
+        errorMessage2.style.display = 'block'
+        // clear display
+        foundResult.style.display = 'none'
     }
-    getBookData(apiURL);
-    userInput.value = '';
-})
 
-//display data in UI
-const displayData = (docs) => {
-    
-    docs?.forEach(singleBook => {
-        let imgURL = ``;
-     if(singleBook?.cover_i) {
-         imgURL = `https://covers.openlibrary.org/b/id/${singleBook?.cover_i}-M.jpg`
-        }
-        const card = document.createElement('div');
-        card.classList.add('card');
-        card.style.marginBottom = '10px'
-        card.style.width = '24%';
-        card.innerHTML = 
-            `<img src=${imgURL} class="card-img-top" style="object-fit: cover; height: 160px; width: auto;">
+
+
+    // found result 
+    foundResult.style.display = 'block'
+    foundResult.innerHTML = `
+    <h2 class="text-center fw-bold text-info"> ${books.numFound} Items Found but Display ${books.docs.length} Items</h2> 
+    `
+    // spinner
+    spinner.style.display = 'none'
+
+    displayBooks.innerText = '';
+    const allBooks = books.docs
+    allBooks.forEach(book => {
+        // console.log(book.title)
+        const div = document.createElement('div');
+        div.classList.add('col')
+        div.innerHTML = `
+        <div class="card h-100">
+            <img src= "https://covers.openlibrary.org/b/id/${book.cover_i}-M.jpg" class="card-img-top w-100 h-50 mb-5" alt="...">
             <div class="card-body">
-            <h5 class="card-title">Card title</h5>
-            <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-            <a href="#" class="btn btn-primary">Go somewhere</a>
-            </div>`
-        resultContainer.appendChild(card);
-    })
+                <h3 class="card-title"><span class="text-info">Name :</span> ${book.title ? book.title : 'Not found'}</h3>
+                <h5><span class="text-info">Author name :</span> ${book.author_name ? book.author_name : 'Not found' }</h5>
+                <h5><span class="text-info">Publisher :</span> ${book.publisher ? book.publisher : 'Not found' }</h5>
+                <h5><span class="text-info">First publish in :</span> ${book.first_publish_year ? book.first_publish_year : 'Not found' }</h5>
+            </div>
+        </div>
+        `
+        displayBooks.appendChild(div)
+
+    });
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// const displayData = (bookData) => {
-//     console.log(bookData);
-//     let imageID = '';
-
-//     bookData.docs.forEach((singleBook) => {
-//         if(singleBook.cover_i) {
-//             imageID = cover_i
-//         }
-//     })
-//     let imageURL = `https://covers.openlibrary.org/b/id/${cover_i}-M.jpg`
-
-
-//     const card = document.createElement('div');
-//     card.classList.add('card');
-//     card.style.width = '18rem';
-//     card.innerHTML = 
-//             `<img src="..." class="card-img-top" alt="...">
-//             <div class="card-body">
-//             <h5 class="card-title">Card title</h5>
-//             <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-//             <a href="#" class="btn btn-primary">Go somewhere</a>
-//             </div>`
-//     resultContainer.appendChild(card)
-// }
