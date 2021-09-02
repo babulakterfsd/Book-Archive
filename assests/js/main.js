@@ -36,7 +36,7 @@ const searchBook = () => {
 }
 
 
-//Displaying Data in the UI
+//Update and Displaying Data in the UI
 const showBooks = (books) => {
     // found result 
     foundResult.style.display = 'none'
