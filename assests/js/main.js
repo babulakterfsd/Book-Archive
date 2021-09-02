@@ -1,3 +1,4 @@
+//Global variables
 const searceField = document.getElementById('input-field')
 const displayBooks = document.getElementById('display-books')
 const spinner = document.getElementById('spinner')
@@ -7,74 +8,64 @@ const errorMessage1 = document.getElementById('error1')
 const errorMessage2 = document.getElementById('error2')
 
 // searce books
-
 const searceBook = () => {
     const searceText = searceField.value;
     searceField.value = '';
 
-    if(searceText === '') {
-        // error handle 1 
+   //error handling for empty input
+    if(searceText === '') { 
         errorMessage1.style.display = 'block'
-        // clear display
         displayBooks.innerText = '';
         foundResult.style.display = 'none'
         errorMessage2.style.display = 'none'
-
-    }
-    else{
+    } else {
         // add spinner
         spinner.style.display = 'block'
-        // clear display
         displayBooks.innerText = '';
         foundResult.style.display = 'none'
         errorMessage1.style.display = 'none'
         errorMessage2.style.display = 'none'
 
         // fetch data
-        fetch(`HTTPS://openlibrary.org/search.json?q=${searceText}`)
+        fetch(`https://openlibrary.org/search.json?q=${searceText}`)
             .then(res => res.json())
             .then(data => showBooks(data))
     }
-
 }
 
 const showBooks = (books) => {
-    console.log(books.docs.length)
-    // error handle 2
+    // found result 
+    foundResult.style.display = 'none'
+    foundResult.innerHTML = `
+    <h4 class="text-center fw-bold text-secondary"> showing ${books.docs.length} of ${books.numFound} found results</h4> 
+    `
+    // error handling for unexpected input
     if(books.docs.length === 0){
         errorMessage2.style.display = 'block'
-        // clear display
-        foundResult.style.display = 'none'
+    }else if(books.docs.length > 0){
+        foundResult.style.display = 'block'
+        errorMessage2.style.display = 'none'
     }
-
-
-
-    // found result 
-    foundResult.style.display = 'block'
-    foundResult.innerHTML = `
-    <h2 class="text-center fw-bold text-info"> ${books.numFound} Items Found but Display ${books.docs.length} Items</h2> 
-    `
+    
     // spinner
     spinner.style.display = 'none'
 
     displayBooks.innerText = '';
     const allBooks = books.docs
     allBooks.forEach(book => {
-        // console.log(book.title)
         const div = document.createElement('div');
         div.classList.add('col')
         div.innerHTML = `
-        <div class="card h-100">
-            <img src= "https://covers.openlibrary.org/b/id/${book.cover_i}-M.jpg" class="card-img-top w-100 h-50 mb-5" alt="...">
-            <div class="card-body">
-                <h3 class="card-title"><span class="text-info">Name :</span> ${book.title ? book.title : 'Not found'}</h3>
-                <h5><span class="text-info">Author name :</span> ${book.author_name ? book.author_name : 'Not found' }</h5>
-                <h5><span class="text-info">Publisher :</span> ${book.publisher ? book.publisher : 'Not found' }</h5>
-                <h5><span class="text-info">First publish in :</span> ${book.first_publish_year ? book.first_publish_year : 'Not found' }</h5>
-            </div>
-        </div>
-        `
+                 <div class="card h-100">
+                   <img src= "https://covers.openlibrary.org/b/id/${book.cover_i}-M.jpg" class="card-img-top w-100 mb-2" style="height: 250px; object-fit: cover;">
+                  <div class="card-body">
+                      <h5 class="card-title py-1 border-bottom text-success"><span class="text-secondary">Title: </span> ${book.title ? book.title : 'Not found'}</h5>
+                      <h6 class="py-1 border-bottom text-secondary"><span class="text-success">Author Name :</span> ${book.author_name ? book.author_name[0] : 'Not found' }</h6>
+                      <h6 class="py-1 border-bottom text-secondary"><span class="text-success">Publisher : </span> ${book.publisher ? book.publisher[0] : 'Not found' }</h5>
+                      <h6 class="py-1 text-secondary"><span class="text-success">First Publish Year : </span> ${book.first_publish_year ? book.first_publish_year : 'Not found' }</h6>
+                 </div>
+              </div>
+             `
         displayBooks.appendChild(div)
-
     });
 }
